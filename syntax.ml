@@ -26,3 +26,12 @@ type program =
     Exp of exp
   | Decl of id * exp
   | RecDecl of id * id * exp
+
+(* Static type inference *)
+type ty =
+    TyInt
+  | TyBool
+
+let pp_ty = function
+    TyInt -> print_string "int"
+  | TyBool -> print_string "bool"
