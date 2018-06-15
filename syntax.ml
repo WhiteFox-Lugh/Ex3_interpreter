@@ -14,6 +14,9 @@ type exp =
            ILit 3, 
            Var "x") --> 
      if x<4 then 3 else x *)
+    (* ML2 interpreter *)
+  | LetExp of id * exp * exp
 
 type program = 
     Exp of exp
+  | Decl of id * exp
