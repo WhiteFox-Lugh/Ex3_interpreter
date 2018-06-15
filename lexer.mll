@@ -22,6 +22,7 @@ rule main = parse
 | "+" { Parser.PLUS }
 | "*" { Parser.MULT }
 | "<" { Parser.LT }
+| "(*" { comment 0 lexbuf }
 
 | ['a'-'z'] ['a'-'z' '0'-'9' '_' '\'']*
     { let id = Lexing.lexeme lexbuf in
@@ -32,4 +33,9 @@ rule main = parse
      }
 | eof { exit 0 }
 
+(* Exercise 3.2.4 *)
 
+and comment nest_times = parse
+  "(*" {comment (nest_times+1) lexbuf}
+| "*)" {if nest_times>0 then (comment (nest_times-1) lexbuf) else (main lexbuf)}
+| _ {comment nest_times lexbuf}
