@@ -4,12 +4,19 @@ open Eval
 let rec read_eval_print env =
   print_string "# ";
   flush stdout;
-  let decl = Parser.toplevel Lexer.main (Lexing.from_channel stdin) in
-  let (id, newenv, v) = eval_decl env decl in
+  (* Exercise 3.2.2 *)
+  let err_process message =
+    Printf.printf "Error: %s " message;
+    print_newline();
+    read_eval_print env in
+  (try 
+    let decl = Parser.toplevel Lexer.main (Lexing.from_channel stdin) in
+    let (id, newenv, v) = eval_decl env decl in
     Printf.printf "val %s = " id;
     pp_val v;
     print_newline();
     read_eval_print newenv
+    with _ -> err_process "Error")
 
 let initial_env = 
   Environment.extend "i" (IntV 1)
