@@ -1,0 +1,13 @@
+*.o
+*.cmi
+*.cmx
+*~
+parser.ml
+parser.mli
+lexer.ml
+._d
+._ncdi
+miniml
+parser.automaton
+parser.conflicts
+.DS_Store
