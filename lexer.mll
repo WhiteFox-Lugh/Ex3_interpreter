@@ -11,6 +11,8 @@ let reservedWords = [
   ("in", Parser.IN);
   (* ML3 interpreter *)
   ("fun", Parser.FUN);
+  (* ML4 interpreter *)
+  ("rec", Parser.REC);
 ] 
 }
 
@@ -30,6 +32,8 @@ rule main = parse
 | "(*" { comment 0 lexbuf }
 (* ML2 interpreter *)
 | "=" { Parser.EQ }
+| "&&" { Parser.AND }
+| "||" { Parser.OR }
 (* ML3 interpreter *)
 | "->" { Parser.RARROW }
 

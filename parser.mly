@@ -6,9 +6,11 @@ open Syntax
 %token PLUS MULT LT
 %token IF THEN ELSE TRUE FALSE
 (* ML2 interpreter *)
-%token LET IN EQ
+%token LET IN EQ AND OR
 (* ML3 interpreter *)
 %token RARROW FUN
+(* ML4 interpreter *)
+%token REC
 
 %token <int> INTV
 %token <Syntax.id> ID
@@ -20,16 +22,30 @@ open Syntax
 toplevel :
     e=Expr SEMISEMI { Exp e }
   | LET x=ID EQ e=Expr SEMISEMI { Decl (x, e) }
+  | LET REC x1=ID EQ FUN x2=ID RARROW e=Expr SEMISEMI { RecDecl (x1, x2, e) }
 
 Expr :
     e=IfExpr { e }
+  | e=LetRecExpr { e }
   | e=LetExpr { e }
-  | e=LTExpr { e }
+  | e=OrExpr { e }
   | e=FunExpr { e }
 
 (* ML2 interpreter "Let" expression *)
 LetExpr :
     LET x=ID EQ e1=Expr IN e2=Expr { LetExp (x, e1, e2) }
+
+(* ML4 interpreter "Let rec" expression *)
+LetRecExpr :
+    LET REC x1=ID EQ FUN x2=ID RARROW e1=Expr IN e2=Expr { LetRecExp (x1, x2, e1, e2) }
+
+OrExpr :
+    l=AndExpr OR r=AndExpr { BinOp (Or, l, r) }
+  | e=AndExpr { e }
+
+AndExpr :
+    l=LTExpr AND r=LTExpr { BinOp (And, l, r) }
+  | e=LTExpr { e }
 
 LTExpr : 
     l=PExpr LT r=PExpr { BinOp (Lt, l, r) }

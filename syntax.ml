@@ -1,7 +1,7 @@
 (* ML interpreter / type reconstruction *)
 type id = string
 
-type binOp = Plus | Mult | Lt
+type binOp = Plus | Mult | Lt | And | Or
 
 type exp =
   | Var of id (* Var "x" --> x *)
@@ -19,7 +19,10 @@ type exp =
     (* ML3 interpreter *)
   | FunExp of id * exp
   | AppExp of exp * exp
+    (* ML4 interpreter *)
+  | LetRecExp of id * id * exp * exp
 
 type program = 
     Exp of exp
   | Decl of id * exp
+  | RecDecl of id * id * exp
