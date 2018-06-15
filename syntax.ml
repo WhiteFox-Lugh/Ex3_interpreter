@@ -16,6 +16,9 @@ type exp =
      if x<4 then 3 else x *)
     (* ML2 interpreter *)
   | LetExp of id * exp * exp
+    (* ML3 interpreter *)
+  | FunExp of id * exp
+  | AppExp of exp * exp
 
 type program = 
     Exp of exp

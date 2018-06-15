@@ -7,6 +7,8 @@ open Syntax
 %token IF THEN ELSE TRUE FALSE
 (* ML2 interpreter *)
 %token LET IN EQ
+(* ML3 interpreter *)
+%token RARROW FUN
 
 %token <int> INTV
 %token <Syntax.id> ID
@@ -23,6 +25,7 @@ Expr :
     e=IfExpr { e }
   | e=LetExpr { e }
   | e=LTExpr { e }
+  | e=FunExpr { e }
 
 (* ML2 interpreter "Let" expression *)
 LetExpr :
@@ -36,9 +39,17 @@ PExpr :
     l=PExpr PLUS r=MExpr { BinOp (Plus, l, r) }
   | e=MExpr { e }
 
-MExpr : 
-    l=MExpr MULT r=AExpr { BinOp (Mult, l, r) }
+MExpr :
+    e1=MExpr MULT e2=AppExpr { BinOp (Mult, e1, e2) }
+  | e=AppExpr { e }
+
+(* ML3 interpreter *)
+AppExpr :
+    e1=AppExpr e2=AExpr { AppExp (e1, e2) }
   | e=AExpr { e }
+
+FunExpr :
+    FUN x=ID RARROW e=Expr { FunExp (x, e) }
 
 AExpr :
     i=INTV { ILit i }
