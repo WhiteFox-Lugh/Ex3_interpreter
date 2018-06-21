@@ -16,7 +16,9 @@ let rec read_eval_print env =
     pp_val v;
     print_newline();
     read_eval_print newenv
-    with _ -> err_process "Error")
+    with Eval.Error err_message -> err_process err_message
+    | Parsing.Parse_error -> err_process "Parsing error"
+    | _ -> err_process "(´･ω･`)")
 
 let initial_env = 
   Environment.extend "i" (IntV 1)

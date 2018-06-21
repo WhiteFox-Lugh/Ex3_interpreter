@@ -11,3 +11,6 @@ miniml
 parser.automaton
 parser.conflicts
 .DS_Store
+*.sh
+*.md
+*.pdf
