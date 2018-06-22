@@ -46,3 +46,13 @@ let ty_decl tyenv = function
     Exp e -> ty_exp tyenv e
   | Decl (id, e) -> ty_exp tyenv e
   | _ -> err ("Not Implemented(´･ω･`)(´･ω･`)(´･ω･`)")
+
+type subst = (tyvar * ty) list
+
+let rec subst_type l t =
+  match t with
+    TyInt -> TyInt
+  | TyBool -> TyBool
+  | TyFun (arg1, arg2) -> TyFun ((subst_type l arg1), (subst_type l arg2))
+  | TyVar v -> (try subst_type l (List.assoc v l) with Not_found -> TyVar v)
+  ;;
