@@ -40,11 +40,11 @@ LetRecExpr :
     LET REC x1=ID EQ FUN x2=ID RARROW e1=Expr IN e2=Expr { LetRecExp (x1, x2, e1, e2) }
 
 OrExpr :
-    l=AndExpr OR r=AndExpr { BinOp (Or, l, r) }
+    l=OrExpr OR r=AndExpr { BinOp (Or, l, r) }
   | e=AndExpr { e }
 
 AndExpr :
-    l=LTExpr AND r=LTExpr { BinOp (And, l, r) }
+    l=AndExpr AND r=LTExpr { BinOp (And, l, r) }
   | e=LTExpr { e }
 
 LTExpr : 
