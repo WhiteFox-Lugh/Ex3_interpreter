@@ -37,7 +37,7 @@ let rec apply_prim op arg1 arg2 = match op, arg1, arg2 with
   | Or, BoolV b1, _ -> if b1 = false then err ("baka") else BoolV(true)
   | Or, _, _ -> err ("Both arguments must be boolean: ||")
 
-let rec single_apply_prim op arg = match (op, arg) with
+let single_apply_prim op arg = match (op, arg) with
     (And, BoolV b) -> 
       if b = false then BoolV(false) else err("Both arguments must be boolean(&&). The second argument isn't type boolean.")
   | (Or, BoolV b) ->
@@ -53,12 +53,20 @@ let rec eval_exp env = function
   | BLit b -> BoolV b
   | BinOp (op, exp1, exp2) -> 
       let arg1 = eval_exp env exp1 in
-      let arg2 = eval_exp env exp2 in
-      let select_apply (op, arg1, arg2) = match (op, arg1, arg2) with
-        (And, BoolV b1, BoolV b2) | (Or, BoolV b1, BoolV b2) -> apply_prim op arg1 arg2
-      | (And, BoolV b, _) | (Or, BoolV b, _) -> single_apply_prim op arg1
-      | (_, _, _) -> apply_prim op arg1 arg2
-      in select_apply (op, arg1, arg2)
+      let select_apply (op, arg1) = match (op, arg1) with
+          (And, BoolV b1) -> 
+            (match b1 with
+              true -> let arg2 = eval_exp env exp2 in apply_prim op arg1 arg2
+            | false -> single_apply_prim op arg1
+            )
+        | (Or, BoolV b1) ->
+            (match b1 with
+              false -> let arg2 = eval_exp env exp2 in apply_prim op arg1 arg2
+            | true -> single_apply_prim op arg1
+            )
+        | (_, _) -> 
+            let arg2 = eval_exp env exp2 in apply_prim op arg1 arg2
+    in select_apply (op, arg1)
   | IfExp (exp1, exp2, exp3) ->
       let test = eval_exp env exp1 in
         (match test with
