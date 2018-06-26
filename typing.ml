@@ -7,21 +7,8 @@ let err s = raise (Error s)
 (* Type Environment *)
 type tyenv = ty Environment.t
 
-(*
-let ty_prim op ty1 ty2 = match op with
-    Plus -> (match ty1, ty2 with
-              TyInt, TyInt -> TyInt
-            | _ -> err ("Argument must be of integer: +"))
-  | Mult -> (match ty1, ty2 with
-              TyInt, TyInt -> TyInt
-            | _ -> err ("Argument must be of integer: *"))
-  | Lt -> (match ty1, ty2 with
-              TyInt, TyInt -> TyBool
-            | _ -> err ("Argument must be of integer: <"))
-  | _ -> err "Not Implemented(´･ω･`)"
-  *)
-
 type subst = (tyvar * ty) list
+
 
 let rec subst_type subst t =
   match t with
