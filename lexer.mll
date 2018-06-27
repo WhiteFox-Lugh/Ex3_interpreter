@@ -32,8 +32,8 @@ rule main = parse
 | "(*" { comment 0 lexbuf }
 (* ML2 interpreter *)
 | "=" { Parser.EQ }
-| "&&" { Parser.AND }
-| "||" { Parser.OR }
+| "&&" { Parser.LAND }
+| "||" { Parser.LOR }
 (* ML3 interpreter *)
 | "->" { Parser.RARROW }
 

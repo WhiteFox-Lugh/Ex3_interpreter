@@ -6,7 +6,7 @@ open Syntax
 %token PLUS MULT LT
 %token IF THEN ELSE TRUE FALSE
 (* ML2 interpreter *)
-%token LET IN EQ AND OR
+%token LET IN EQ LAND LOR
 (* ML3 interpreter *)
 %token RARROW FUN
 (* ML4 interpreter *)
@@ -40,11 +40,11 @@ LetRecExpr :
     LET REC x1=ID EQ FUN x2=ID RARROW e1=Expr IN e2=Expr { LetRecExp (x1, x2, e1, e2) }
 
 OrExpr :
-    l=OrExpr OR r=AndExpr { BinOp (Or, l, r) }
+    l=OrExpr LOR r=AndExpr { BinOp (Or, l, r) }
   | e=AndExpr { e }
 
 AndExpr :
-    l=AndExpr AND r=LTExpr { BinOp (And, l, r) }
+    l=AndExpr LAND r=LTExpr { BinOp (And, l, r) }
   | e=LTExpr { e }
 
 LTExpr : 
