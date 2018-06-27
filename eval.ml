@@ -31,18 +31,14 @@ let rec apply_prim op arg1 arg2 = match op, arg1, arg2 with
   | Lt, IntV i1, IntV i2 -> BoolV (i1 < i2)
   | Lt, _, _ -> err ("Both arguments must be integer: <")
   | And, BoolV b1, BoolV b2 -> if b1 = true then BoolV(b2) else BoolV(false)
-  (* | And, BoolV b1, _ -> if b1 = true then err ("syobon") else BoolV(false) *)
   | And, _, _ -> err ("Both arguments must be boolean: &&")
   | Or, BoolV b1, BoolV b2 -> if b1 = false then BoolV(b2) else BoolV(true)
-  | Or, BoolV b1, _ -> if b1 = false then err ("baka") else BoolV(true)
   | Or, _, _ -> err ("Both arguments must be boolean: ||")
 
 let single_apply_prim op arg = match (op, arg) with
-    (And, BoolV b) -> 
-      if b = false then BoolV(false) else err("Both arguments must be boolean(&&). The second argument isn't type boolean.")
-  | (Or, BoolV b) ->
-      if b = true then BoolV(true) else err("Both arguments must be boolean(||). The second argument isn't type boolean.")
-  | (_, _) -> err("asserting error")
+    (And, BoolV b) -> BoolV(false)
+  | (Or, BoolV b) -> BoolV(true)
+  | (_, _) -> err("assert") (* this pattern matching isn't used. *)
 
 
 let rec eval_exp env = function
