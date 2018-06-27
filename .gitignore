@@ -12,5 +12,6 @@ parser.automaton
 parser.conflicts
 .DS_Store
 *.sh
-*.md
+report_2.md
+report_3.md
 *.pdf
