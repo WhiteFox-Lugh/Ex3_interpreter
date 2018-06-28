@@ -8,7 +8,7 @@ open Syntax
 (* ML2 interpreter *)
 %token LET IN EQ LAND LOR
 (* ML3 interpreter *)
-%token RARROW FUN
+%token RARROW FUN DFUN
 (* ML4 interpreter *)
 %token REC
 
@@ -67,7 +67,8 @@ AppExpr :
   | e=AExpr { e }
 
 FunExpr :
-    FUN x=ID RARROW e=Expr { FunExp (x, e) }
+    DFUN x=ID RARROW e=Expr { DFunExp (x, e) }
+  | FUN x=ID RARROW e=Expr { FunExp (x, e) }
   | FUN x=ID e=FunSimple { FunExp (x, e) }
 
 (* Optional Exercise *)

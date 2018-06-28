@@ -9,6 +9,7 @@ type exval =
     IntV of int
   | BoolV of bool
   | ProcV of id * exp * dnval Environment.t ref
+  | DProcV of id * exp
 and dnval = exval
 
 exception Error of string
@@ -20,6 +21,7 @@ let rec string_of_exval = function
     IntV i -> string_of_int i
   | BoolV b -> string_of_bool b
   | ProcV (_, _, _) -> "< (`･ω･´)つ<fun> >"
+  | DProcV (_, _) -> "<(´･ω･｀)つ―*’“*:.｡.dfun >"
 
 let pp_val v = print_string (string_of_exval v)
 
@@ -78,6 +80,7 @@ let rec eval_exp env = function
   (* ML3 interpreter *)
   (* 現在の環境 env をクロージャ内に保存 *)
   | FunExp (id, exp) -> ProcV (id, exp, ref env)
+  | DFunExp (id, exp) -> DProcV (id, exp)
   | AppExp (exp1, exp2) ->
       let funval = eval_exp env exp1 in
       let arg = eval_exp env exp2 in
@@ -85,7 +88,10 @@ let rec eval_exp env = function
           ProcV (id, body, env') ->
             (* クロージャ内の環境を取り出して仮引数に対する束縛で拡張 *)
             let newenv = Environment.extend id arg !env' in
-              eval_exp newenv body
+            eval_exp newenv body
+        | DProcV (id, body) -> 
+            let newenv = Environment.extend id arg env in
+            eval_exp newenv body
         | _ -> err ("Non-function value is applied")
         )
   | LetRecExp (id, para, exp1, exp2) ->

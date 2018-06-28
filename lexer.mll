@@ -11,6 +11,7 @@ let reservedWords = [
   ("in", Parser.IN);
   (* ML3 interpreter *)
   ("fun", Parser.FUN);
+  ("dfun", Parser.DFUN);
   (* ML4 interpreter *)
   ("rec", Parser.REC);
 ] 

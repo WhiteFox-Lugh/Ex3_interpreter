@@ -19,6 +19,7 @@ type exp =
     (* ML3 interpreter *)
   | FunExp of id * exp
   | AppExp of exp * exp
+  | DFunExp of id * exp
     (* ML4 interpreter *)
   | LetRecExp of id * id * exp * exp
 
