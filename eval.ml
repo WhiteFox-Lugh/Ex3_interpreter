@@ -6,7 +6,7 @@ open Syntax
    の言語ではこの両者は同じになるが，この2つが異なる言語もある．教科書
    参照． *)
 type exval =
-  | IntV of int
+    IntV of int
   | BoolV of bool
   | ProcV of id * exp * dnval Environment.t ref
 and dnval = exval

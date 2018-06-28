@@ -4,7 +4,7 @@ type id = string
 type binOp = Plus | Mult | Lt | And | Or
 
 type exp =
-  | Var of id (* Var "x" --> x *)
+    Var of id (* Var "x" --> x *)
   | ILit of int (* ILit 3 --> 3 *)
   | BLit of bool (* BLit true --> true *)
   | BinOp of binOp * exp * exp
