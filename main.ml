@@ -33,12 +33,9 @@ let read_file_eval_print env =
     pp_val v;
     print_newline();
     exit 0
-  with End_of_file ->
-        close_in_noerr open_file;
-        raise End_of_file
-      | e ->
-        close_in_noerr open_file;
-        raise e)
+  with e ->
+    close_in_noerr open_file;
+    raise e)
 
 
 
