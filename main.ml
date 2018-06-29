@@ -54,4 +54,4 @@ let initial_env =
 let _ = 
   if (Array.length Sys.argv) = 1 then read_eval_print initial_env
   else if (Array.length Sys.argv) = 2 then read_file_eval_print initial_env
-  else print_string "Error: the number of arguments must be less than two.\nman"
+  else print_string "Error: the number of arguments must be less than two.\n"
