@@ -111,25 +111,27 @@ let rec eval_decl env = function
     let v = eval_exp env e in (id, Environment.extend id v env, v)
   (* Exercise 3.3.2 *)
   | MultiDecl (id, e, next) ->
+  (* 一番初めの let 宣言の処理 *)
     let v = eval_exp env e in
     let next_env = Environment.extend id v env in
     let initial_list = List.append [] [(id, v)] in
-    (*Printf.printf "val %s = " id;
-    pp_val v;
-    print_newline();*)
+  (* ここから二番目以降の let 宣言の処理 *)
     let rec eval_m_decl env l = function
       MultiDecl (id_m, e_m, next_m) ->
         let v_m = eval_exp env e_m in
         let next_env_m = Environment.extend id_m v_m env in
         let next_list = List.append l [(id_m, v_m)] in
         eval_m_decl next_env_m next_list next_m
+  (* 最後の let 宣言の処理と、変数と値の表示を行う *)
     | Decl (id_d, e_d) ->
       let v_d = eval_exp env e_d in
       let next_env_d = Environment.extend id_d v_d env in
       let id_list = List.append l [(id_d, v_d)] in
         let rec id_process c_env l = match l with
+        (* 一番最後の let 宣言の処理だけは main.ml に任せる *)
           [] -> (id_d, Environment.extend id_d v_d c_env, v_d)
         | (id', v') :: rest ->
+        (* 変数が重複している場合は、後に宣言されたものを優先する *)
           if List.length rest = 0 || (List.mem_assoc id' rest) then id_process c_env rest
           else 
             (Printf.printf "val %s = " id';
