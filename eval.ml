@@ -72,7 +72,7 @@ let rec eval_exp env = function
           | BoolV false -> eval_exp env exp3
           | _ -> err ("Test expression must be boolean: if"))
   (* ML2 interpreter *)
-  | LetExp (id, exp1, exp2) ->
+  | LetExp (id, exp1, exp2) | MultiLetExp (id, exp1, exp2) ->
     (* 現在の環境で exp1 を評価 *)
     let value = eval_exp env exp1 in
     (* exp1 の評価結果を id の値として環境に追加して exp2 を評価 *)
@@ -105,10 +105,40 @@ let rec eval_exp env = function
       eval_exp newenv exp2
 
 
-let eval_decl env = function
+let rec eval_decl env = function
     Exp e -> let v = eval_exp env e in ("-", env, v)
   | Decl (id, e) ->
-      let v = eval_exp env e in (id, Environment.extend id v env, v)
+    let v = eval_exp env e in (id, Environment.extend id v env, v)
+  (* Exercise 3.3.2 *)
+  | MultiDecl (id, e, next) ->
+    let v = eval_exp env e in
+    let next_env = Environment.extend id v env in
+    let initial_list = List.append [] [(id, v)] in
+    (*Printf.printf "val %s = " id;
+    pp_val v;
+    print_newline();*)
+    let rec eval_m_decl env l = function
+      MultiDecl (id_m, e_m, next_m) ->
+        let v_m = eval_exp env e_m in
+        let next_env_m = Environment.extend id_m v_m env in
+        let next_list = List.append l [(id_m, v_m)] in
+        eval_m_decl next_env_m next_list next_m
+    | Decl (id_d, e_d) ->
+      let v_d = eval_exp env e_d in
+      let next_env_d = Environment.extend id_d v_d env in
+      let id_list = List.append l [(id_d, v_d)] in
+        let rec id_process c_env l = match l with
+          [] -> (id_d, Environment.extend id_d v_d c_env, v_d)
+        | (id', v') :: rest ->
+          if List.length rest = 0 || (List.mem_assoc id' rest) then id_process c_env rest
+          else 
+            (Printf.printf "val %s = " id';
+            pp_val v';
+            print_newline();
+            id_process c_env rest)
+        in id_process next_env_d id_list
+    | _ -> err("let rec expression or others aren't supported. sorry.")
+    in eval_m_decl next_env initial_list next
   | RecDecl (id, para, e) ->
       let dummy = ref Environment.empty in
         let new_env = Environment.extend id (ProcV (para, e, dummy)) env in

@@ -22,6 +22,7 @@ open Syntax
 toplevel :
     e=Expr SEMISEMI { Exp e }
   | LET x=ID EQ e=Expr SEMISEMI { Decl (x, e) }
+  | LET x=ID EQ e1=Expr e2=MultiLetExpr { MultiDecl (x, e1, e2) } 
   | LET x=ID e=LetFunSimple SEMISEMI { Decl (x, e) }
   | LET REC x1=ID EQ FUN x2=ID RARROW e=Expr SEMISEMI { RecDecl (x1, x2, e) }
 
@@ -72,6 +73,11 @@ FunExpr :
   | FUN x=ID e=FunSimple { FunExp (x, e) }
 
 (* Optional Exercise *)
+(* Exercise 3.3.2 *)
+MultiLetExpr :
+    LET x=ID EQ e1=Expr e2=MultiLetExpr { MultiDecl (x, e1, e2) }
+  | LET x=ID EQ e=Expr SEMISEMI { Decl (x, e) }
+
 (* Exercise 3.4.3 *)
 FunSimple :
     x=ID RARROW e=Expr { FunExp (x, e) }
