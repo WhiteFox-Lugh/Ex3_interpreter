@@ -1,4 +1,4 @@
-report_2.pdf
+*.pdf
 test.ml
 *.o
 *.cmi
