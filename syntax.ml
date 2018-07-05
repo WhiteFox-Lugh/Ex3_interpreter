@@ -16,6 +16,10 @@ type exp =
      if x<4 then 3 else x *)
     (* ML2 interpreter *)
   | LetExp of id * exp * exp
+  (*
+  | LetAndExp of id * exp * exp
+  | LetAndInExp of id * exp * exp
+  *)
   | MultiLetExp of id * exp * exp
     (* ML3 interpreter *)
   | FunExp of id * exp
@@ -28,4 +32,5 @@ type program =
     Exp of exp
   | Decl of id * exp
   | MultiDecl of id * exp * program
+  (*| MultiAndDecl of id * exp * program*)
   | RecDecl of id * id * exp

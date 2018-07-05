@@ -6,7 +6,8 @@ open Syntax
    の言語ではこの両者は同じになるが，この2つが異なる言語もある．教科書
    参照． *)
 type exval =
-    IntV of int
+    Empty
+  | IntV of int
   | BoolV of bool
   | ProcV of id * exp * dnval Environment.t ref
   | DProcV of id * exp
@@ -22,6 +23,7 @@ let rec string_of_exval = function
   | BoolV b -> string_of_bool b
   | ProcV (_, _, _) -> "< (`･ω･´)つ<fun> >"
   | DProcV (_, _) -> "<(´･ω･｀)つ―*’“*:.｡.dfun >"
+  | _ -> ""
 
 let pp_val v = print_string (string_of_exval v)
 
@@ -72,11 +74,25 @@ let rec eval_exp env = function
           | BoolV false -> eval_exp env exp3
           | _ -> err ("Test expression must be boolean: if"))
   (* ML2 interpreter *)
-  | LetExp (id, exp1, exp2) | MultiLetExp (id, exp1, exp2) ->
+  | LetExp (id, exp1, exp2) ->
     (* 現在の環境で exp1 を評価 *)
     let value = eval_exp env exp1 in
     (* exp1 の評価結果を id の値として環境に追加して exp2 を評価 *)
     eval_exp (Environment.extend id value env) exp2
+  (* Exercise 3.3.4 *)
+  (* | LetAndInExp (id, exp1, exp2) ->
+    let value = eval_exp env exp1 in
+    let rec eval_exp_letand env' app_env = function
+      LetAndInExp (id', exp1', exp2') ->
+        let value' = eval_exp env' exp1' in
+        let new_env = Environment.extend id' value' app_env in
+        eval_exp_letand env' new_env exp2'
+    | LetExp (id', exp1', exp2') ->
+        let value' = eval_exp env' exp1' in
+        let new_env = Environment.extend id' value' app_env in
+        eval_exp new_env exp2'
+    | other -> eval_exp env' other
+    in eval_exp (Environment.extend id value env) exp2 *)
   (* ML3 interpreter *)
   (* 現在の環境 env をクロージャ内に保存 *)
   | FunExp (id, exp) -> ProcV (id, exp, ref env)
@@ -103,6 +119,7 @@ let rec eval_exp env = function
       (* ダミーへの環境への参照に、拡張された環境を破壊的代入してバックパッチ *)
       dummyenv := newenv;
       eval_exp newenv exp2
+  | _ -> Empty
 
 
 let rec eval_decl env = function
@@ -141,6 +158,26 @@ let rec eval_decl env = function
         in id_process next_env_d id_list
     | _ -> err("let rec expression or others aren't supported. sorry.")
     in eval_m_decl next_env initial_list next
+  (*
+  | MultiAndDecl (id, e, next) ->
+      let v = eval_exp env e in 
+      let next_env = Environment.extend id v env in
+      Printf.printf "val %s = " id;
+      pp_val v;
+      print_newline();
+      let rec eval_multidecl init_env new_env = function
+        MultiAndDecl (id', e', next') ->
+        let v' = eval_exp init_env e' in
+        let next_env' = Environment.extend id' v' new_env in
+        Printf.printf "val %s = " id';
+        pp_val v';
+        print_newline();
+        eval_multidecl init_env next_env' next'
+      | Decl (id', e') ->
+        let v' = eval_exp init_env e' in (id', Environment.extend id' v' new_env, v')
+      | _ -> err("error")
+      in eval_multidecl env next_env next
+      *)
   | RecDecl (id, para, e) ->
       let dummy = ref Environment.empty in
         let new_env = Environment.extend id (ProcV (para, e, dummy)) env in

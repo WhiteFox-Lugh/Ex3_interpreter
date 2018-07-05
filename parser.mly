@@ -6,7 +6,7 @@ open Syntax
 %token PLUS MULT LT
 %token IF THEN ELSE TRUE FALSE
 (* ML2 interpreter *)
-%token LET IN EQ LAND LOR
+%token LET IN EQ LAND LOR AND
 (* ML3 interpreter *)
 %token RARROW FUN DFUN
 (* ML4 interpreter *)
@@ -24,6 +24,10 @@ toplevel :
   | LET x=ID EQ e=Expr SEMISEMI { Decl (x, e) }
   | LET x=ID EQ e1=Expr e2=MultiLetExpr { MultiDecl (x, e1, e2) } 
   | LET x=ID e=LetFunSimple SEMISEMI { Decl (x, e) }
+  (*
+  | LET e=LetAndInExpr SEMISEMI { Exp e }
+  | LET x=ID EQ e1=Expr AND e2=LetAndExpr { MultiAndDecl (x, e1, e2) }
+  *)
   | LET REC x1=ID EQ FUN x2=ID RARROW e=Expr SEMISEMI { RecDecl (x1, x2, e) }
 
 Expr :
@@ -37,6 +41,14 @@ Expr :
 LetExpr :
     LET x=ID EQ e1=Expr IN e2=Expr { LetExp (x, e1, e2) }
   | LET x=ID e1=LetFunSimple IN e2=Expr { LetExp (x, e1, e2) }
+
+LetAndExpr :
+    x=ID EQ e1=Expr AND e2=LetAndExpr { MultiAndDecl (x, e1, e2) }
+  | x=ID EQ e=Expr SEMISEMI { Decl(x, e) }
+
+LetAndInExpr :
+    x=ID EQ e1=Expr AND e2=LetAndInExpr { LetAndInExp (x, e1, e2) }
+  | x=ID EQ e1=Expr IN e2=Expr { LetExp (x, e1, e2) }
 
 (* ML4 interpreter "Let rec" expression *)
 LetRecExpr :

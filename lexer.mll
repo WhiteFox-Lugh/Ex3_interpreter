@@ -9,6 +9,7 @@ let reservedWords = [
   (* ML2 interpreter *)
   ("let", Parser.LET);
   ("in", Parser.IN);
+  ("and", Parser.AND);
   (* ML3 interpreter *)
   ("fun", Parser.FUN);
   ("dfun", Parser.DFUN);
