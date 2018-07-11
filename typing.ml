@@ -103,22 +103,30 @@ let rec ty_exp tyenv = function
       let eqs = (ty1, TyFun(ty2, domty)) :: (eqs_of_subst s1) @ (eqs_of_subst s2) in
       let s3 = unify eqs in
       (s3, subst_type s3 domty)
-  (* Exercise 4.3.6 *)
+  (* Exercise 4.3.6 
   | LetRecExp (id1, id2, exp1, exp2) ->
       let dom_ty1 = TyVar (fresh_tyvar ()) in
       let dom_ty2 = TyVar (fresh_tyvar ()) in
       let tyenv_f = Environment.extend id1 dom_ty1 tyenv in
       let tyenv_f_x = Environment.extend id2 dom_ty2 tyenv_f in
       let (s1, ran_ty1) = ty_exp tyenv_f_x exp1 in
-      let (s2, ran_ty2) = ty_exp tyenv_f exp2 in
-      let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) in
+      let (s2, ty2) = ty_exp tyenv_f exp2 in
+      let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(dom_ty1, ty2)]in
       let s3 = unify eqs in
-      (s3, subst_type s3 dom_ty2) 
-      
-  (*| _ -> err ("Not Implemented(´･ω･`)(´･ω･`)")*)
+      (s3, subst_type s3 ty2) *)
+  | _ -> err ("Not Implemented(´･ω･`)(´･ω･`)")
 
 
 let ty_decl tyenv = function
     Exp e -> ty_exp tyenv e
   | Decl (id, e) -> ty_exp tyenv e
-  | RecDecl (_, _, e) -> ty_exp tyenv e
+  | RecDecl (id1, id2, e) -> ty_exp tyenv e
+  (*
+      let dom_ty1 = TyVar (fresh_tyvar ()) in
+      let dom_ty2 = TyVar (fresh_tyvar ()) in
+      let tyenv_f = Environment.extend id1 dom_ty1 tyenv in
+      let tyenv_f_x = Environment.extend id2 dom_ty2 tyenv_f in
+      let (s1, ran_ty1) = ty_exp tyenv_f_x e in
+      let eqs = (eqs_of_subst s1) @ [(dom_ty1, ran_ty1); (dom_ty2, ran_ty1)] in
+      let s3 = unify eqs in
+      (s3, subst_type s3 dom_ty1) *)
