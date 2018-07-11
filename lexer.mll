@@ -23,7 +23,12 @@ rule main = parse
 
 | "-"? ['0'-'9']+
     { Parser.INTV (int_of_string (Lexing.lexeme lexbuf)) }
-
+(* prefix operator *)
+| "(" [' ' '\009' '\012' '\n']* "+" [' ' '\009' '\012' '\n']* ")" { Parser.PREPLUS } 
+| "(" [' ' '\009' '\012' '\n']+ "*" [' ' '\009' '\012' '\n']+ ")" { Parser.PREMULT }
+| "(" [' ' '\009' '\012' '\n']* "<" [' ' '\009' '\012' '\n']* ")" { Parser.PRELT }
+| "(" [' ' '\009' '\012' '\n']* "&&" [' ' '\009' '\012' '\n']* ")" { Parser.PRELAND }
+| "(" [' ' '\009' '\012' '\n']* "||" [' ' '\009' '\012' '\n']* ")" { Parser.PRELOR }
 | "(" { Parser.LPAREN }
 | ")" { Parser.RPAREN }
 | ";;" { Parser.SEMISEMI }

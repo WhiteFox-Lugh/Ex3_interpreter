@@ -9,6 +9,7 @@ open Syntax
 %token LET IN EQ LAND LOR
 (* ML3 interpreter *)
 %token RARROW FUN DFUN
+%token PREPLUS PREMULT PRELT PRELAND PRELOR
 (* ML4 interpreter *)
 %token REC
 
@@ -52,14 +53,17 @@ AndExpr :
 
 LTExpr : 
     l=PExpr LT r=PExpr { BinOp (Lt, l, r) }
+  | PRELT l=AExpr r=AExpr { BinOp (Lt, l, r) }
   | e=PExpr { e }
 
 PExpr :
     l=PExpr PLUS r=MExpr { BinOp (Plus, l, r) }
+  | PREPLUS l=AExpr r=AExpr { BinOp (Plus, l, r) }
   | e=MExpr { e }
 
 MExpr :
     e1=MExpr MULT e2=AppExpr { BinOp (Mult, e1, e2) }
+  | PREMULT l=AExpr r=AExpr { BinOp (Mult, l, r) }
   | e=AppExpr { e }
 
 (* ML3 interpreter *)
@@ -71,6 +75,7 @@ FunExpr :
     DFUN x=ID RARROW e=Expr { DFunExp (x, e) }
   | FUN x=ID RARROW e=Expr { FunExp (x, e) }
   | FUN x=ID e=FunSimple { FunExp (x, e) }
+
 
 (* Optional Exercise *)
 (* Exercise 3.3.2 *)
@@ -93,6 +98,11 @@ AExpr :
   | TRUE   { BLit true }
   | FALSE  { BLit false }
   | i=ID   { Var i }
+  | PREPLUS { FunExp ("a", FunExp("b", BinOp (Plus, Var "a", Var "b"))) }
+  | PREMULT { FunExp ("a", FunExp("b", BinOp (Mult, Var "a", Var "b"))) }
+  | PRELT { FunExp ("a", FunExp("b", BinOp (Lt, Var "a", Var "b"))) }
+  | PRELAND { FunExp ("a", FunExp("b", BinOp (And, Var "a", Var "b"))) }
+  | PRELOR { FunExp ("a", FunExp("b", BinOp (Or, Var "a", Var "b"))) }
   | LPAREN e=Expr RPAREN { e }
 
 IfExpr :
