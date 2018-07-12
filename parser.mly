@@ -26,7 +26,6 @@ toplevel :
   | LET x=ID EQ e1=Expr e2=MultiLetExpr { MultiDecl (x, e1, e2) } 
   | LET x=ID e=LetFunSimple SEMISEMI { Decl (x, e) }
   | LET REC x1=ID EQ FUN x2=ID RARROW e=Expr SEMISEMI { RecDecl (x1, x2, e) }
-  | LET e=LetAndInExpr SEMISEMI { Exp e }
   | LET x=ID EQ e1=Expr AND e2=LetAndExpr { MultiAndDecl (x, e1, e2) }
 
 Expr :
