@@ -112,7 +112,7 @@ let rec ty_exp tyenv = function
       let tyenv_f_x = Environment.extend id2 type_x tyenv_f in
       let (s1, ran_ty1) = ty_exp tyenv_f_x exp1 in
       let (s2, ty2) = ty_exp tyenv_f exp2 in
-      let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(type_f, ty2)] in
+      let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(alpha, ran_ty1)] in
       let s3 = unify eqs in
       (s3, subst_type s3 ty2)
   (* | _ -> err ("Not Implemented(´･ω･`)(´･ω･`)") *)
