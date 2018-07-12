@@ -6,7 +6,8 @@ open Syntax
    の言語ではこの両者は同じになるが，この2つが異なる言語もある．教科書
    参照． *)
 type exval =
-    IntV of int
+    Empty
+  | IntV of int
   | BoolV of bool
   | ProcV of id * exp * dnval Environment.t ref
   | DProcV of id * exp
@@ -22,6 +23,7 @@ let rec string_of_exval = function
   | BoolV b -> string_of_bool b
   | ProcV (_, _, _) -> "< (`･ω･´)つ<fun> >"
   | DProcV (_, _) -> "<(´･ω･｀)つ―*’“*:.｡.dfun >"
+  | _ -> ""
 
 let pp_val v = print_string (string_of_exval v)
 
@@ -77,6 +79,52 @@ let rec eval_exp env = function
     let value = eval_exp env exp1 in
     (* exp1 の評価結果を id の値として環境に追加して exp2 を評価 *)
     eval_exp (Environment.extend id value env) exp2
+    (* Exercise 3.3.4 *)
+ | LetAndInExp (id, exp1, exp2) ->
+    let value = eval_exp env exp1 in
+    let init_env = Environment.extend id value env in
+      let rec eval_exp_letand env' app_env id_list = function
+          Var x -> 
+          (try Environment.lookup x env with 
+            Environment.Not_bound -> err ("Variable not bound: " ^ x))
+        | ILit i -> IntV i
+        | BLit b -> BoolV b
+        | BinOp (op, exp1, exp2) -> 
+            let arg1 = eval_exp_letand env' app_env id_list exp1 in
+            let select_apply (op, arg1) = match (op, arg1) with
+              (And, BoolV b1) -> 
+                (match b1 with
+                  true -> let arg2 = eval_exp_letand env' app_env id_list exp2 in apply_prim op arg1 arg2
+                | false -> single_apply_prim op arg1
+                )
+            | (Or, BoolV b1) ->
+                (match b1 with
+                  false -> let arg2 = eval_exp_letand env' app_env id_list exp2 in apply_prim op arg1 arg2
+                | true -> single_apply_prim op arg1
+                )
+            | (_, _) -> let arg2 = eval_exp_letand env' app_env id_list exp2 in apply_prim op arg1 arg2
+            in select_apply (op, arg1)
+        | IfExp (exp1, exp2, exp3) ->
+            let test = eval_exp_letand env' app_env id_list exp1 in
+              (match test with
+                  BoolV true -> eval_exp_letand env' app_env id_list exp2 
+                | BoolV false -> eval_exp_letand env' app_env id_list exp3
+                | _ -> err ("Test expression must be boolean: if"))
+        | LetAndInExp (id', exp1', exp2') ->
+            if not (List.mem id' id_list) then
+              let value' = eval_exp env' exp1' in
+              let new_env = Environment.extend id' value' app_env in
+              let new_list = List.append id_list [id'] in
+              eval_exp_letand env' new_env new_list exp2'
+            else err ("Variable " ^ id' ^ " is bound several times in this matching")
+        | LetExp (id', exp1', exp2') ->
+          if not (List.mem id' id_list) then
+            let value' = eval_exp env' exp1' in
+            let new_env = Environment.extend id' value' app_env in
+            eval_exp new_env exp2'
+          else err ("Variable " ^ id' ^ " is bound several times in this matching")
+        | other -> err ("Not implemented")
+    in eval_exp_letand env init_env [id] exp2 
   (* ML3 interpreter *)
   (* 現在の環境 env をクロージャ内に保存 *)
   | FunExp (id, exp) -> ProcV (id, exp, ref env)
@@ -103,6 +151,7 @@ let rec eval_exp env = function
       (* ダミーへの環境への参照に、拡張された環境を破壊的代入してバックパッチ *)
       dummyenv := newenv;
       eval_exp newenv exp2
+  | _ -> Empty
 
 
 let rec eval_decl env = function
@@ -141,6 +190,33 @@ let rec eval_decl env = function
         in id_process next_env_d id_list
     | _ -> err("let rec expression or others aren't supported. sorry.")
     in eval_m_decl next_env initial_list next
+      | MultiAndDecl (id, e, next) ->
+          let v = eval_exp env e in 
+          let next_env = Environment.extend id v env in
+          let rec eval_multidecl init_env new_env id_list id_value_list = function
+            MultiAndDecl (id', e', next') ->
+              if not (List.mem id' id_list) then
+                let v' = eval_exp init_env e' in
+                let next_env' = Environment.extend id' v' new_env in
+                let new_id_list = List.rev_append id_list [id'] in
+                let new_id_value_list = List.append [(id', v')] id_value_list in
+                eval_multidecl init_env next_env' new_id_list new_id_value_list next'
+              else err ("Variable " ^ id' ^ " is bound several times in this matching")
+          | Decl (id', e') ->
+              if not (List.mem id' id_list) then
+                let rec id_process l = match l with
+                [] -> 
+                  let v' = eval_exp init_env e' 
+                  in (id', Environment.extend id' v' new_env, v')
+              | (id_d, v_d) :: rest ->
+                  (Printf.printf "val %s = " id_d;
+                  pp_val v_d;
+                  print_newline();
+                  id_process rest)
+                in id_process (List.rev id_value_list)
+              else err ("Variable " ^ id' ^ " is bound several times in this matching")
+          | _ -> err("error")
+          in eval_multidecl env next_env [id] [(id, v)] next
   | RecDecl (id, para, e) ->
       let dummy = ref Environment.empty in
         let new_env = Environment.extend id (ProcV (para, e, dummy)) env in

@@ -18,6 +18,8 @@ type exp =
   | LetExp of id * exp * exp
   | MultiLetExp of id * exp * exp
     (* ML3 interpreter *)
+  | LetAndExp of id * exp * exp
+  | LetAndInExp of id * exp * exp
   | FunExp of id * exp
   | AppExp of exp * exp
   | DFunExp of id * exp
@@ -28,4 +30,5 @@ type program =
     Exp of exp
   | Decl of id * exp
   | MultiDecl of id * exp * program
+  | MultiAndDecl of id * exp * program
   | RecDecl of id * id * exp
