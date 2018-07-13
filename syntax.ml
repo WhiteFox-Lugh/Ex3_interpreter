@@ -25,6 +25,10 @@ type exp =
   | DFunExp of id * exp
     (* ML4 interpreter *)
   | LetRecExp of id * id * exp * exp
+    (* ML5 interpreter *)
+  | ConsExp of exp * exp
+  | MatchExp of id * id * exp * exp * exp
+  | EmptyConsList
 
 type program = 
     Exp of exp

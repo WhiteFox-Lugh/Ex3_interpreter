@@ -12,6 +12,8 @@ open Syntax
 %token PREPLUS PREMULT PRELT PRELAND PRELOR
 (* ML4 interpreter *)
 %token REC
+(* ML5 interpretr *)
+%token LBRK RBRK VBAR CONS MATCH WITH
 
 %token <int> INTV
 %token <Syntax.id> ID
@@ -35,6 +37,8 @@ Expr :
   | e=OrExpr { e }
   | e=FunExpr { e }
   | LET e=LetAndInExpr { e }
+  | e=ConsExpr { e }
+  | e=MatchExpr { e }
 
 (* ML2 interpreter "Let" expression *)
 LetExpr :
@@ -65,6 +69,15 @@ LTExpr :
     l=PExpr LT r=PExpr { BinOp (Lt, l, r) }
   | PRELT l=AExpr r=AExpr { BinOp (Lt, l, r) }
   | e=PExpr { e }
+
+(* Exercise 3.6.1 *)
+ConsExpr :
+    LBRK RBRK { EmptyConsList }
+  | LBRK RBRK CONS e2=ConsExpr { ConsExp (EmptyConsList, e2) }
+  | e1=PExpr CONS e2=ConsExpr { ConsExp (e1, e2) }
+
+MatchExpr :
+    MATCH e1=Expr WITH LBRK RBRK RARROW e2=Expr VBAR x1=ID CONS x2=ID RARROW e3=Expr { MatchExp (x1, x2, e1, e2, e3) }
 
 PExpr :
     l=PExpr PLUS r=MExpr { BinOp (Plus, l, r) }
@@ -107,6 +120,7 @@ AExpr :
     i=INTV { ILit i }
   | TRUE   { BLit true }
   | FALSE  { BLit false }
+  | LBRK RBRK { EmptyConsList }
   | i=ID   { Var i }
   | PREPLUS { FunExp ("a", FunExp("b", BinOp (Plus, Var "a", Var "b"))) }
   | PREMULT { FunExp ("a", FunExp("b", BinOp (Mult, Var "a", Var "b"))) }

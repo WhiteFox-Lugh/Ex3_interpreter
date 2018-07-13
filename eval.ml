@@ -6,11 +6,14 @@ open Syntax
    の言語ではこの両者は同じになるが，この2つが異なる言語もある．教科書
    参照． *)
 type exval =
-    Empty
-  | IntV of int
+    IntV of int
   | BoolV of bool
   | ProcV of id * exp * dnval Environment.t ref
   | DProcV of id * exp
+  | Empty
+  | EmptyList
+  | ListV of exval list
+
 and dnval = exval
 
 exception Error of string
@@ -23,7 +26,23 @@ let rec string_of_exval = function
   | BoolV b -> string_of_bool b
   | ProcV (_, _, _) -> "< (`･ω･´)つ<fun> >"
   | DProcV (_, _) -> "<(´･ω･｀)つ―*’“*:.｡.dfun >"
-  | _ -> ""
+  | Empty | ListV [] -> ""
+  | EmptyList -> "[]"
+  | ListV l ->
+    let brackets =
+      let rec str_of_exval_list value_list = 
+        if List.length value_list > 1 then
+          match List.hd value_list with
+            IntV i -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ (string_of_int i)
+          | BoolV b -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ (string_of_bool b)
+          | ProcV (_, _, _) -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ "< (`･ω･´)つ<fun> >"
+          | DProcV (_, _) -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ "<(´･ω･｀)つ―*’“*:.｡.dfun >"
+          | Empty -> ""
+          | EmptyList -> (str_of_exval_list (List.tl value_list)) ^ "; []"
+          | ListV l' -> (str_of_exval_list (List.tl value_list)) ^ "; [" ^ (str_of_exval_list l') ^ "]"
+        else string_of_exval (List.hd value_list)
+      in str_of_exval_list l
+    in "[" ^ brackets ^ "]"
 
 let pp_val v = print_string (string_of_exval v)
 
@@ -151,7 +170,44 @@ let rec eval_exp env = function
       (* ダミーへの環境への参照に、拡張された環境を破壊的代入してバックパッチ *)
       dummyenv := newenv;
       eval_exp newenv exp2
-  | _ -> Empty
+  | ConsExp (exp1, exp2) ->
+    let value = eval_exp env exp1 in
+    let rec cons_eval exval_list exp = 
+      match exp with
+        EmptyConsList -> ListV (exval_list)
+      | ConsExp (exp1', exp2') ->
+        let value' = 
+          match exp1' with
+        | EmptyConsList -> EmptyList
+        | _ -> eval_exp env exp1' 
+        in
+        let new_exval_list = value' :: exval_list in
+        cons_eval new_exval_list exp2'
+      | _ -> err ("Syntax Error")
+      in cons_eval [value] exp2
+  | EmptyConsList -> EmptyList
+  | MatchExp (id1, id2, exp1, exp2, exp3) ->
+    if (id1 = id2) then err ("You can't use the same variable in the cons list: " ^ id1)
+    else 
+      (let op_value = eval_exp env exp1 in
+        match op_value with
+          EmptyList -> eval_exp env exp2
+        | ListV (x :: rest) ->
+          if List.length rest > 0 then
+            let value1 = x in
+            let value2 = ListV rest in
+            let tmpenv = Environment.extend id1 value1 env in
+            let newenv = Environment.extend id2 value2 tmpenv in
+            eval_exp newenv exp3
+          else 
+            let value1 = x in
+            let value2 = EmptyList in
+            let tmpenv = Environment.extend id1 value1 env in
+            let newenv = Environment.extend id2 value2 tmpenv in
+            eval_exp newenv exp3
+        | _ -> err ("Syntax Errorr")
+      )
+  | _ -> err ("Syntax Error")
 
 
 let rec eval_decl env = function
