@@ -49,7 +49,6 @@ let rec unify l =
     | (TyFun (a1, a2), TyFun (b1, b2)) -> unify ((a1, b1) :: ((a2, b2) :: rest))
       (* u({(alpha, tau)} union+ X') or
          u({(tau, alpha)} union+ X') *)
-    | (TyVar var1, TyVar var2) -> [(var1, TyVar var2)] @ unify (subst_eqs [(var1, TyVar var2)] rest)
     | (TyVar var, ty) | (ty, TyVar var) -> 
       (* if tau include alpha *)
       if MySet.member var (Syntax.freevar_ty ty) then err ("Can't unify(´･ω･`)")
