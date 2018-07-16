@@ -16,6 +16,7 @@ let rec subst_type subst t =
   | TyBool -> TyBool
   | TyFun (arg1, arg2) -> TyFun ((subst_type subst arg1), (subst_type subst arg2))
   | TyVar v -> (try subst_type subst (List.assoc v subst) with Not_found -> TyVar v)
+  | TyList (arg) -> TyList ((subst_type subst arg))
   ;;
 
   
@@ -44,6 +45,7 @@ let rec unify l =
       (* u( {(tau, tau)} union+ X') = u(X') *)
       (TyInt, TyInt) -> unify rest
     | (TyBool, TyBool) -> unify rest
+    | (TyList _, TyList _) -> unify rest
     | (TyVar alpha, TyVar beta) when alpha = beta -> unify rest
       (* u({(tau11->tau12, tau21->tau22)} union+ X') = u({(tau11, tau21),(tau12, tau22)} union+ X') *)
     | (TyFun (a1, a2), TyFun (b1, b2)) -> unify ((a1, b1) :: ((a2, b2) :: rest))
@@ -114,7 +116,40 @@ let rec ty_exp tyenv = function
       let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(alpha, ran_ty1)] in
       let s3 = unify eqs in
       (s3, subst_type s3 ty2)
-  (* | _ -> err ("Not Implemented(´･ω･`)(´･ω･`)") *)
+  | ConsExp (exp1, exp2) ->
+      let alpha = TyVar (fresh_tyvar ()) in
+      let (s1, ty1) = ty_exp tyenv exp1 in
+      let (s2, ty2) = ty_exp tyenv exp2 in
+      let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(ty1, alpha); (ty2, TyList(alpha))] in
+      let s3 = unify eqs in
+      (s3, subst_type s3 ty2)
+  | EmptyConsList -> 
+      let alpha = TyVar (fresh_tyvar ()) in ([], TyList(alpha))
+    (* 
+    | MatchExp (id1, id2, exp1, exp2, exp3) ->
+      if (id1 = id2) then err ("You can't use the same variable in the cons list: " ^ id1)
+      else 
+        (let op_value = eval_exp env exp1 in
+          match op_value with
+            EmptyList -> eval_exp env exp2
+          | ListV (x :: rest) ->
+            if List.length rest > 0 then
+              let value1 = x in
+              let value2 = ListV rest in
+              let tmpenv = Environment.extend id1 value1 env in
+              let newenv = Environment.extend id2 value2 tmpenv in
+              eval_exp newenv exp3
+            else 
+              let value1 = x in
+              let value2 = EmptyList in
+              let tmpenv = Environment.extend id1 value1 env in
+              let newenv = Environment.extend id2 value2 tmpenv in
+              eval_exp newenv exp3
+          | _ -> err ("Syntax Error")
+        )
+    | _ -> err ("Syntax Error")
+    *)
+  | _ -> err ("Not Implemented(´･ω･`)(´･ω･`)")
 
 
 let ty_decl tyenv = function
