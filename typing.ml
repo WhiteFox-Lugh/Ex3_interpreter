@@ -39,13 +39,14 @@ let rec subst_eqs s = function
 let rec unify l =
   match l with
     (* u(phi) = phi *)
-    [ ] -> [ ]
+    [] -> []
   | (x :: rest) ->
     match x with
       (* u( {(tau, tau)} union+ X') = u(X') *)
       (TyInt, TyInt) -> unify rest
     | (TyBool, TyBool) -> unify rest
-    | (TyList _, TyList _) -> unify rest
+    | (TyList alpha, TyList beta) when alpha = beta -> unify rest
+    | (TyList alpha, ty) | (ty, TyList alpha) -> unify ((ty, alpha) :: rest)
     | (TyVar alpha, TyVar beta) when alpha = beta -> unify rest
       (* u({(tau11->tau12, tau21->tau22)} union+ X') = u({(tau11, tau21),(tau12, tau22)} union+ X') *)
     | (TyFun (a1, a2), TyFun (b1, b2)) -> unify ((a1, b1) :: ((a2, b2) :: rest))
@@ -125,30 +126,21 @@ let rec ty_exp tyenv = function
       (s3, subst_type s3 ty2)
   | EmptyConsList -> 
       let alpha = TyVar (fresh_tyvar ()) in ([], TyList(alpha))
-    (* 
-    | MatchExp (id1, id2, exp1, exp2, exp3) ->
-      if (id1 = id2) then err ("You can't use the same variable in the cons list: " ^ id1)
-      else 
-        (let op_value = eval_exp env exp1 in
-          match op_value with
-            EmptyList -> eval_exp env exp2
-          | ListV (x :: rest) ->
-            if List.length rest > 0 then
-              let value1 = x in
-              let value2 = ListV rest in
-              let tmpenv = Environment.extend id1 value1 env in
-              let newenv = Environment.extend id2 value2 tmpenv in
-              eval_exp newenv exp3
-            else 
-              let value1 = x in
-              let value2 = EmptyList in
-              let tmpenv = Environment.extend id1 value1 env in
-              let newenv = Environment.extend id2 value2 tmpenv in
-              eval_exp newenv exp3
-          | _ -> err ("Syntax Error")
-        )
-    | _ -> err ("Syntax Error")
-    *)
+  | MatchExp (id1, id2, exp1, exp2, exp3) ->
+      let alpha = TyVar (fresh_tyvar ()) in
+      let beta = TyVar (fresh_tyvar ()) in
+      let gamma = TyVar (fresh_tyvar ()) in
+      let tau1 = TyVar (fresh_tyvar ()) in
+      let tau2 = TyVar (fresh_tyvar ()) in
+      let (s1, ty1) = ty_exp tyenv exp1 in
+      let (s2, ty2) = ty_exp tyenv exp2 in
+      let tmp_env = Environment.extend id1 beta tyenv in
+      let cons_env = Environment.extend id2 (TyList(gamma)) tmp_env in
+      let (s3, ty3) = ty_exp cons_env exp3 in
+      let eqs' = [(ty1, TyList(alpha)); (ty2, tau1); (ty3, tau2); (tau1, tau2); (alpha, beta); (beta, gamma); (gamma, alpha); (TyList(alpha), TyList(gamma))] in
+      let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ (eqs_of_subst s3) @ eqs' in
+      let s4 = unify eqs in
+      (s4, subst_type s4 ty2)
   | _ -> err ("Not Implemented(´･ω･`)(´･ω･`)")
 
 

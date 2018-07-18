@@ -102,6 +102,6 @@ let rec freevar_ty ty =
   | TyBool -> MySet.empty
   | TyVar v -> MySet.singleton v
   | TyFun (t1, t2) -> MySet.union (freevar_ty t1) (freevar_ty t2)
-  | TyList t -> MySet.empty
+  | TyList t -> freevar_ty t
   ;;
 (* ty -> tyvar MySet.t *)
