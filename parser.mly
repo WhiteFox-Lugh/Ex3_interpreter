@@ -31,14 +31,11 @@ toplevel :
   | LET x=ID EQ e1=Expr AND e2=LetAndExpr { MultiAndDecl (x, e1, e2) }
 
 Expr :
-    e=IfExpr { e }
-  | e=LetRecExpr { e }
+    e=LetRecExpr { e }
   | e=LetExpr { e }
   | e=OrExpr { e }
-  | e=FunExpr { e }
   | LET e=LetAndInExpr { e }
   | e=ConsExpr { e }
-  | e=MatchExpr { e }
 
 (* ML2 interpreter "Let" expression *)
 LetExpr :
@@ -127,6 +124,9 @@ AExpr :
   | PRELT { FunExp ("a", FunExp("b", BinOp (Lt, Var "a", Var "b"))) }
   | PRELAND { FunExp ("a", FunExp("b", BinOp (And, Var "a", Var "b"))) }
   | PRELOR { FunExp ("a", FunExp("b", BinOp (Or, Var "a", Var "b"))) }
+  | e=IfExpr { e }
+  | e=FunExpr { e }
+  | e=MatchExpr { e }
   | LPAREN e=Expr RPAREN { e }
 
 IfExpr :
