@@ -33,13 +33,13 @@ let rec string_of_exval = function
       let rec str_of_exval_list value_list = 
         if List.length value_list > 1 then
           match List.hd value_list with
-            IntV i -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ (string_of_int i)
-          | BoolV b -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ (string_of_bool b)
-          | ProcV (_, _, _) -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ "< (`･ω･´)つ<fun> >"
-          | DProcV (_, _) -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ "<(´･ω･｀)つ―*’“*:.｡.dfun >"
+            IntV i -> (string_of_int i) ^ "; " ^ (str_of_exval_list (List.tl value_list))
+          | BoolV b -> (string_of_bool b) ^ "; " ^ (str_of_exval_list (List.tl value_list))
+          | ProcV (_, _, _) ->  "< (`･ω･´)つ<fun> >; " ^ (str_of_exval_list (List.tl value_list))
+          | DProcV (_, _) -> "<(´･ω･｀)つ―*’“*:.｡.dfun >; " ^ (str_of_exval_list (List.tl value_list))
           | Empty -> ""
-          | EmptyList -> (str_of_exval_list (List.tl value_list)) ^ "; []"
-          | ListV l' -> (str_of_exval_list (List.tl value_list)) ^ "; [" ^ (str_of_exval_list l') ^ "]"
+          | EmptyList -> "[]; " ^ (str_of_exval_list (List.tl value_list))
+          | ListV l' -> "[" ^ (str_of_exval_list l') ^ "]; " ^ (str_of_exval_list (List.tl value_list))
         else string_of_exval (List.hd value_list)
       in str_of_exval_list l
     in "[" ^ brackets ^ "]"
@@ -181,7 +181,7 @@ let rec eval_exp env = function
         | EmptyConsList -> EmptyList
         | _ -> eval_exp env exp1' 
         in
-        let new_exval_list = value' :: exval_list in
+        let new_exval_list = List.append exval_list [value'] in
         cons_eval new_exval_list exp2'
       | _ -> err ("Syntax Error")
       in cons_eval [value] exp2

@@ -23,7 +23,7 @@ let rec read_eval_print env tyenv =
     with Eval.Error err_message -> err_process err_message
         | Parsing.Parse_error -> err_process "Parsing error"
         | Typing.Error err_message -> err_process err_message
-        | _ -> err_process "(´･ω･`)"
+        | err_message -> err_process (Printexc.to_string err_message)
     )
 
 let initial_env = 

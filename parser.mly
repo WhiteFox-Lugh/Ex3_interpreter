@@ -74,8 +74,8 @@ LTExpr :
 (* Exercise 3.6.1 *)
 ConsExpr :
     LBRK RBRK { EmptyConsList }
-  | LBRK RBRK CONS e2=ConsExpr { ConsExp (EmptyConsList, e2) }
-  | e1=PExpr CONS e2=ConsExpr { ConsExp (e1, e2) }
+  | LBRK RBRK CONS e2=Expr { ConsExp (EmptyConsList, e2) }
+  | e1=PExpr CONS e2=Expr { ConsExp (e1, e2) }
 
 MatchExpr :
     MATCH e1=Expr WITH LBRK RBRK RARROW e2=Expr VBAR x1=ID CONS x2=ID RARROW e3=Expr { MatchExp (x1, x2, e1, e2, e3) }
