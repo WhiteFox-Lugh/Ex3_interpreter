@@ -13,7 +13,7 @@ open Syntax
 (* ML4 interpreter *)
 %token REC
 (* ML5 interpretr *)
-%token LBRK RBRK VBAR CONS MATCH WITH
+%token LBRK RBRK VBAR CONS MATCH WITH SEMI
 
 %token <int> INTV
 %token <Syntax.id> ID
@@ -36,6 +36,7 @@ Expr :
   | e=OrExpr { e }
   | LET e=LetAndInExpr { e }
   | e=ConsExpr { e }
+  | LBRK e=ListExpr { e }
 
 (* ML2 interpreter "Let" expression *)
 LetExpr :
@@ -72,6 +73,16 @@ ConsExpr :
     LBRK RBRK { EmptyConsList }
   | LBRK RBRK CONS e2=ConsExpr { ConsExp (EmptyConsList, e2) }
   | e1=PExpr CONS e2=ConsExpr { ConsExp (e1, e2) }
+  | LBRK e1=ListExpr CONS e2=ConsExpr { ConsExp (e1, e2) }
+  | LBRK e=ListExpr { e }
+
+(* Exercise 3.6.2 *)
+ListExpr :
+    e1=PExpr e2=ListExpr { ConsExp (e1, e2) }
+  | LBRK e1=ListExpr e2=ListExpr { ConsExp (e1, e2) }
+  | RBRK SEMI { EmptyConsList }
+  | SEMI e1=PExpr e2=ListExpr { ConsExp (e1, e2) }
+  | RBRK { EmptyConsList }
 
 MatchExpr :
     MATCH e1=Expr WITH LBRK RBRK RARROW e2=Expr VBAR x1=ID CONS x2=ID RARROW e3=Expr { MatchExp (x1, x2, e1, e2, e3) }

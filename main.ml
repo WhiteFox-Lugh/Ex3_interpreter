@@ -17,8 +17,7 @@ let rec read_eval_print env =
     print_newline();
     read_eval_print newenv
     with Eval.Error err_message -> err_process err_message
-    | Parsing.Parse_error -> err_process "Parsing error"
-    | _ -> err_process "(´･ω･`)")
+    | err_message -> err_process (Printexc.to_string err_message))
 
 
 (* batch interpreter *)

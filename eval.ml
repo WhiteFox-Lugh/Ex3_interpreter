@@ -33,16 +33,16 @@ let rec string_of_exval = function
       let rec str_of_exval_list value_list = 
         if List.length value_list > 1 then
           match List.hd value_list with
-            IntV i -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ (string_of_int i)
-          | BoolV b -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ (string_of_bool b)
-          | ProcV (_, _, _) -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ "< (`･ω･´)つ<fun> >"
-          | DProcV (_, _) -> (str_of_exval_list (List.tl value_list)) ^ "; " ^ "<(´･ω･｀)つ―*’“*:.｡.dfun >"
+            IntV i -> (string_of_int i) ^ "; " ^ (str_of_exval_list (List.tl value_list))
+          | BoolV b -> (string_of_bool b) ^ "; " ^ (str_of_exval_list (List.tl value_list))
+          | ProcV (_, _, _) ->  "< (`･ω･´)つ<fun> >; " ^ (str_of_exval_list (List.tl value_list))
+          | DProcV (_, _) -> "<(´･ω･｀)つ―*’“*:.｡.dfun >; " ^ (str_of_exval_list (List.tl value_list))
           | Empty -> ""
-          | EmptyList -> (str_of_exval_list (List.tl value_list)) ^ "; []"
-          | ListV l' -> (str_of_exval_list (List.tl value_list)) ^ "; [" ^ (str_of_exval_list l') ^ "]"
+          | EmptyList -> "[]; " ^ (str_of_exval_list (List.tl value_list))
+          | ListV l' -> "[" ^ (str_of_exval_list l') ^ "]; " ^ (str_of_exval_list (List.tl value_list))
         else string_of_exval (List.hd value_list)
       in str_of_exval_list l
-    in "[" ^ brackets ^ "]"
+  in "[" ^ brackets ^ "]"
 
 let pp_val v = print_string (string_of_exval v)
 
@@ -179,9 +179,17 @@ let rec eval_exp env = function
         let value' = 
           match exp1' with
         | EmptyConsList -> EmptyList
-        | _ -> eval_exp env exp1' 
+        | _ -> eval_exp env exp1'
+          (*
+          let value'' = eval_exp env exp1' in
+          let type_check = List.hd exval_list in
+          match (type_check, value'') with
+          (IntV _, IntV _) | (BoolV _, BoolV _) | (ProcV _, ProcV _) | (DProcV _, DProcV _)
+        | (Empty, Empty) | (EmptyList, EmptyList) | (ListV _, ListV _)
+          -> value''
+        | _ -> err ("mismatch type in list") *)
         in
-        let new_exval_list = value' :: exval_list in
+        let new_exval_list = List.append exval_list [value'] in
         cons_eval new_exval_list exp2'
       | _ -> err ("Syntax Error")
       in cons_eval [value] exp2
@@ -205,7 +213,7 @@ let rec eval_exp env = function
             let tmpenv = Environment.extend id1 value1 env in
             let newenv = Environment.extend id2 value2 tmpenv in
             eval_exp newenv exp3
-        | _ -> err ("Syntax Errorr")
+        | _ -> err ("Syntax Error")
       )
   | _ -> err ("Syntax Error")
 
