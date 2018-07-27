@@ -180,14 +180,6 @@ let rec eval_exp env = function
           match exp1' with
         | EmptyConsList -> EmptyList
         | _ -> eval_exp env exp1'
-          (*
-          let value'' = eval_exp env exp1' in
-          let type_check = List.hd exval_list in
-          match (type_check, value'') with
-          (IntV _, IntV _) | (BoolV _, BoolV _) | (ProcV _, ProcV _) | (DProcV _, DProcV _)
-        | (Empty, Empty) | (EmptyList, EmptyList) | (ListV _, ListV _)
-          -> value''
-        | _ -> err ("mismatch type in list") *)
         in
         let new_exval_list = List.append exval_list [value'] in
         cons_eval new_exval_list exp2'
