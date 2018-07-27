@@ -1,4 +1,5 @@
 *.pdf
+*.html
 test.ml
 *.o
 *.cmi
